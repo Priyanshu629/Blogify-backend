@@ -1,8 +1,10 @@
+import dotenv from "dotenv"
+dotenv.config()
 import mongoose from "mongoose";
-
+const MONGODB_URI = process.env.MONGODB_URI
 export const dbConnect = () =>
   mongoose.connect(
-    "mongodb+srv://mishrapriyanshu793:priyanshuabc@mycluster.7voxtp7.mongodb.net/blogApp"
+    MONGODB_URI
   ).then(()=>{
     console.log("Database connected successfully");
   }).catch(error=>{
