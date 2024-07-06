@@ -22,7 +22,7 @@ app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({extended:false}))
 
-app.use("/api/v1/check",isAuthenticated,(req,res)=>{
+app.get("/api/v1/check",isAuthenticated,(req,res)=>{
   return res.status(200).json({userId:req.user.userId})
 })
 app.use('/api/v1/user',userRouter)
