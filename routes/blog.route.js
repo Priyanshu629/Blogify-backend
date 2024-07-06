@@ -8,7 +8,7 @@ const router = express.Router()
 router.route("/create-blog").post(isAuthenticated,upload.single("image"),addBlog)
 router.route("/get-blogs").get(getBlogs)
 router.route("/get-blog/:blogId").get(getBlog)
-router.route("/delete-blog/:blogId").delete(isAuthenticated,deleteBlog)
+router.route("/delete-blog/:blogId/:imageId").delete(isAuthenticated,deleteBlog)
 router.route("/update-blog/:blogId").put(isAuthenticated,updateBlog)
 
 
