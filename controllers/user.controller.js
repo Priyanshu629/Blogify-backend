@@ -105,5 +105,11 @@ export const getProfile = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-  return res.clearCookie("token").json({ message: "logout success" });
+  return res
+    .clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    })
+    .json({ message: "logout success" });
 };
