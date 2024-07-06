@@ -1,4 +1,5 @@
 import { Blog } from "../models/blog.model.js";
+import uploadToCloudinary from "../utils/cloudinary.js"
 
 export const addBlog = async (req, res) => {
   const { title, body } = req.body;
@@ -9,7 +10,13 @@ export const addBlog = async (req, res) => {
     return res.status(400).json({ message: "Please fill all the fields" });
   }
 
-  const blog = await Blog.create({ postedBy, title, body });
+  if (req.file) {
+    const image = await uploadToCloudinary(req.file.path);
+    const blog = await Blog.create({ postedBy, title, body,image: image.url });
+    return res.status(201).json({ message: "blog created successfully" });
+  }
+
+  const blog = await Blog.create({ postedBy, title, body,image:null });
 
   return res.status(201).json({ message: "blog created successfully" });
 };
