@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser"
 import { dbConnect } from "./utils/db.config.js"
 import userRouter from "./routes/user.route.js"
 import blogRouter from "./routes/blog.route.js"
+import { isAuthenticated } from "./middleware/auth.middleware.js"
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -20,6 +21,10 @@ app.use(cors({
 app.use(cookieParser())
 app.use(express.json())
 app.use(express.urlencoded({extended:false}))
+
+app.use("/api/v1/check",isAuthenticated,(req,res)=>{
+  return res.status(200).json({userId:req.user.userId})
+})
 app.use('/api/v1/user',userRouter)
 app.use('/api/v1/blog',blogRouter)
 

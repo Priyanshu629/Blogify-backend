@@ -84,7 +84,7 @@ export const loginUser = async (req, res) => {
         secure: true,
         sameSite: "None",
       })
-      .json({ message: "login successfull", userId: user._id });
+      .json({ message: "login successfull"});
   } catch (error) {
     res.json({ error: error.message });
   }
@@ -113,3 +113,5 @@ export const logout = (req, res) => {
     })
     .json({ message: "logout success" });
 };
+
+

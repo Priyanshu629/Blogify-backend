@@ -13,7 +13,12 @@ try {
     const isValidToken = jwt.verify(token,jwtSecret)
 
     if(!isValidToken){
-        return res.status(401).json({message:"You are not Loggedin"})
+        res.clearCookie("token",{
+            httpOnly:true,
+            secure:true,
+            sameSite:"none"
+        })
+        
     }
 
     req.user = jwt.decode(token)
