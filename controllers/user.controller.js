@@ -5,21 +5,41 @@ import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import uploadToCloudinary from "../utils/cloudinary.js";
 const jwtSecret = process.env.JWT_SECRET;
+import nodemailer from "nodemailer";
+const userEmail = process.env.EMAIL;
+const userPassword = process.env.PASSWORD;
+
+let transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: userEmail,
+    pass: userPassword,
+  },
+});
 
 export const registerUser = async (req, res) => {
   const { name, username, email, password } = req.body;
-
-  console.log(req.body, req.file);
 
   try {
     if (username === "" || email === "" || password === "") {
       return res.status(400).json({ message: "Please fill all the fields" });
     }
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ $or:[{username},{email}]  });
 
     if (user) {
-      return res.status(422).json({ message: "user already exists" });
+      if(user.username===username){
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      else{
+        return res.status(400).json({ message: "Email already exists" });
+      }
     }
+
+    let mailOptions = {
+      to: email,
+      subject: "Welcome Email",
+      html: `<h1> Welcome , ${username} 😀 . ThankYou for choosing us.</h1>`,
+    };
 
     const hashedPassword = await hash(password, 12);
 
@@ -47,10 +67,12 @@ export const registerUser = async (req, res) => {
         photo: "",
       });
 
-      return res
-        .status(201)
-        .json({ message: "user created successfully", newUser });
+      res.status(201).json({ message: "user created successfully", newUser });
     }
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) error;
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -84,7 +106,7 @@ export const loginUser = async (req, res) => {
         secure: true,
         sameSite: "None",
       })
-      .json({ message: "login successfull"});
+      .json({ message: "login successfull" });
   } catch (error) {
     res.json({ error: error.message });
   }
@@ -113,5 +135,3 @@ export const logout = (req, res) => {
     })
     .json({ message: "logout success" });
 };
-
-
