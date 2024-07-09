@@ -6,8 +6,13 @@ import jwt from "jsonwebtoken";
 import uploadToCloudinary from "../utils/cloudinary.js";
 const jwtSecret = process.env.JWT_SECRET;
 import nodemailer from "nodemailer";
+import { Otp } from "../models/otp.model.js";
 const userEmail = process.env.EMAIL;
 const userPassword = process.env.PASSWORD;
+
+function generateOTP() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
 
 let transporter = nodemailer.createTransport({
   service: "gmail",
@@ -24,13 +29,12 @@ export const registerUser = async (req, res) => {
     if (username === "" || email === "" || password === "") {
       return res.status(400).json({ message: "Please fill all the fields" });
     }
-    const user = await User.findOne({ $or:[{username},{email}]  });
+    const user = await User.findOne({ $or: [{ username }, { email }] });
 
     if (user) {
-      if(user.username===username){
+      if (user.username === username) {
         return res.status(400).json({ message: "Username already exists" });
-      }
-      else{
+      } else {
         return res.status(400).json({ message: "Email already exists" });
       }
     }
@@ -116,6 +120,7 @@ export const getProfile = async (req, res) => {
   const { userId } = req.user;
   try {
     const user = await User.findById(userId);
+    User.create;
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -135,3 +140,66 @@ export const logout = (req, res) => {
     })
     .json({ message: "logout success" });
 };
+
+export const forgetPassword = async(req, res) => {
+  const { email } = req.body;
+
+  if (email === "")
+    return res.status(400).json({ message: "Please provide your email" });
+  try {
+
+    const user = await User.findOne({ email });
+   
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  let newOtp = generateOTP();
+
+  const savedOpt = Otp.create({
+    userEmail: email,
+    otp: newOtp,
+  });
+
+  const mailOptions={
+    to:email,
+    subject:"Reset Password",
+    html:`<p>This is otp for reset password : ${newOtp} and will be valid for 3 minutes</p>`
+  }
+   const sentOTP =await transporter.sendMail(mailOptions)
+
+  if(savedOpt ){
+    return res.status(200).json({ message: "OTP sent successfully" });
+  }
+    
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+
+  
+};
+
+
+export const resetPassword = async(req,res)=>{
+  const {otp,newPassword}=req.body
+  
+try {
+  
+  const checkOpt= await Otp.findOne({otp})
+
+  if(!checkOpt || checkOpt.otp!==otp){
+    return res.status(401).json({message:"Invalid OTP"})
+  }
+  const hashedNewPassword= await hash(newPassword,12)
+
+  const updatePass = await User.findOneAndUpdate({email:checkOpt.userEmail},{password:hashedNewPassword},{new:true})
+
+  if(updatePass){
+    return res.status(200).json({message:"Password updated successfully",updatePass})
+  }
+  
+} catch (error) {
+  return res.status(500).json({message:error.message})
+}
+
+ 
+}
