@@ -31,6 +31,13 @@ export const getBlogs = async (req, res) => {
   return res.status(200).json({ blogs });
 };
 
+export const getMyBlogs = async (req, res) => {
+  const { userId } = req.user;
+  const blogs = await Blog.find({ postedBy: userId });
+
+  return res.status(200).json({ blogs });
+};
+
 export const getBlog = async (req, res) => {
   const { blogId } = req.params;
   const blog = await Blog.findById(blogId).populate("postedBy");
@@ -38,10 +45,13 @@ export const getBlog = async (req, res) => {
 
   return res.status(200).json({ blog });
 };
+
 export const deleteBlog = async (req, res) => {
   const { blogId, imageId } = req.params;
-
-  await cloudinary.uploader.destroy(imageId);
+  
+  if (imageId) {
+    await cloudinary.uploader.destroy(imageId);
+  }
 
   await Blog.findByIdAndDelete(blogId);
 

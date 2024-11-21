@@ -25,18 +25,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.get("/api/v1/check", isAuthenticated, (req, res) => {
-  return res.status(200).json({ userId: req.user.userId,username:req.user.username });
+  return res.status(200).json({ userId: req.user.userId,username:req.user.username,photo: req.user.photo });
 });
+
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/blog", blogRouter);
 
+
+
 app.post("/sent-mail", (req, res) => {
   const { email } = req.body;
-
-  
-
-  
-  
 });
+
 
 app.listen(PORT, () => console.log(`listening at port ${PORT}`));
